@@ -1,0 +1,47 @@
+pipeline {
+    agent any
+    stages {
+        stage('Cluster-1: Deploy Nginx Pod') {
+            steps {
+                script {
+                    // kubeconfig1.yaml 应为第一个集群的凭据
+                    withKubeConfig([credentialsId: 'kubeconfig1']) {
+                        sh '''
+                        kubectl run nginx-pod-1 --image=nginx:latest --restart=Never
+                        kubectl wait --for=condition=Ready pod/nginx-pod-1 --timeout=60s
+                        kubectl exec nginx-pod-1 -- sh -c "git clone https://github.com/nginx/nginx.git /nginx-src"
+                        '''
+                    }
+                }
+            }
+        }
+        stage('Cluster-2: Deploy Nginx Pod') {
+            steps {
+                script {
+                    // kubeconfig2.yaml 应为第二个集群的凭据
+                    withKubeConfig([credentialsId: 'kubeconfig2']) {
+                        sh '''
+                        kubectl run nginx-pod-2 --image=nginx:latest --restart=Never
+                        kubectl wait --for=condition=Ready pod/nginx-pod-2 --timeout=60s
+                        kubectl exec nginx-pod-2 -- sh -c "git clone https://github.com/nginx/nginx.git /nginx-src"
+                        '''
+                    }
+                }
+            }
+        }
+        stage('Cluster-3: Deploy Nginx Pod') {
+            steps {
+                script {
+                    // kubeconfig3.yaml 应为第三个集群的凭据
+                    withKubeConfig([credentialsId: 'kubeconfig3']) {
+                        sh '''
+                        kubectl run nginx-pod-3 --image=nginx:latest --restart=Never
+                        kubectl wait --for=condition=Ready pod/nginx-pod-3 --timeout=60s
+                        kubectl exec nginx-pod-3 -- sh -c "git clone https://github.com/nginx/nginx.git /nginx-src"
+                        '''
+                    }
+                }
+            }
+        }
+    }
+}
